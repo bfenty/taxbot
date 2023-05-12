@@ -54,7 +54,7 @@ func main() {
 	endDateStr := endDate.Format("2006-01-02")
 
 	// Specify the limit for the number of orders per page
-	limit := 20
+	limit := 100
 
 	// Make the initial API request to get the total number of pages
 	url := fmt.Sprintf("https://ssapi.shipstation.com/orders?orderDateStart=%s&orderDateEnd=%s&pageSize=%d&page=1", startDateStr, endDateStr, limit)
