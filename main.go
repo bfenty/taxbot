@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -22,7 +23,7 @@ type OrderResponse struct {
 type Order struct {
 	OrderID   string  `json:"orderNumber"`
 	Email     string  `json:"customerEmail"`
-	BillTo    BillTo  `json:"billTo"`
+	BillTo    BillTo  `json:"shipTo"`
 	TotalPaid float64 `json:"amountPaid"`
 	TaxPaid   float64 `json:"taxAmount"`
 }
@@ -46,8 +47,8 @@ func main() {
 	authHeader := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(apiKey+":"+apiSecret)))
 
 	// Define the start and end dates for the orders query
-	startDate := time.Now().AddDate(0, 0, -30) // Start date is 7 days ago
-	endDate := time.Now()                      // End date is current date
+	startDate := time.Now().AddDate(0, 0, -1) // Start date is 7 days ago
+	endDate := time.Now()                     // End date is current date
 
 	// Format the dates to the required ShipStation format
 	startDateStr := startDate.Format("2006-01-02")
@@ -75,7 +76,7 @@ func main() {
 			log.Println("Error making API request:", err)
 			return
 		}
-
+		saveRecordsToCSV(orderResponse.Orders, "order_records.csv")
 		processOrders(orderResponse.Orders, stateResults)
 	}
 
@@ -86,6 +87,30 @@ func main() {
 	}
 
 	log.Println("State results saved to state_results.csv")
+}
+
+// Save individual order records to a CSV file
+func saveRecordsToCSV(records []Order, filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// Write CSV header
+	header := []string{"Order ID", "Email", "State", "Total Paid", "Tax Paid"}
+	writer.Write(header)
+
+	// Write CSV rows for each order record
+	for _, order := range records {
+		row := []string{order.OrderID, order.Email, order.BillTo.State, strconv.FormatFloat(order.TotalPaid, 'f', 2, 64), strconv.FormatFloat(order.TaxPaid, 'f', 2, 64)}
+		writer.Write(row)
+	}
+
+	return nil
 }
 
 // Make an API request and return the OrderResponse
