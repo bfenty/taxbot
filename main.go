@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -46,13 +47,22 @@ func main() {
 	// Create the Basic Authentication header
 	authHeader := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(apiKey+":"+apiSecret)))
 
-	// Define the start and end dates for the orders query
-	startDate := time.Now().AddDate(0, 0, -1) // Start date is 7 days ago
-	endDate := time.Now()                     // End date is current date
+	// Command-line flags
+	startDateFlag := flag.String("start", "", "Start date (YYYY-MM-DD)")
+	endDateFlag := flag.String("end", "", "End date (YYYY-MM-DD)")
+	flag.Parse()
 
-	// Format the dates to the required ShipStation format
-	startDateStr := startDate.Format("2006-01-02")
-	endDateStr := endDate.Format("2006-01-02")
+	startDateStr, err := time.Parse("2006-01-02", *startDateFlag)
+	if err != nil {
+		log.Println("Error parsing start date:", err)
+		return
+	}
+
+	endDateStr, err := time.Parse("2006-01-02", *endDateFlag)
+	if err != nil {
+		log.Println("Error parsing end date:", err)
+		return
+	}
 
 	// Specify the limit for the number of orders per page
 	limit := 100
