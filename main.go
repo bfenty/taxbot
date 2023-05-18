@@ -52,17 +52,24 @@ func main() {
 	endDateFlag := flag.String("end", "", "End date (YYYY-MM-DD)")
 	flag.Parse()
 
-	startDateStr, err := time.Parse("2006-01-02", *startDateFlag)
+	startDate, err := time.Parse("2006-01-02", *startDateFlag)
 	if err != nil {
 		log.Println("Error parsing start date:", err)
 		return
 	}
 
-	endDateStr, err := time.Parse("2006-01-02", *endDateFlag)
+	endDate, err := time.Parse("2006-01-02", *endDateFlag)
 	if err != nil {
 		log.Println("Error parsing end date:", err)
 		return
 	}
+
+	// Format the dates to the required ShipStation format
+	startDateStr := startDate.Format("2006-01-02")
+	endDateStr := endDate.Format("2006-01-02")
+
+	fmt.Println("Start Date:", startDateStr)
+	fmt.Println("End Date:", endDateStr)
 
 	// Specify the limit for the number of orders per page
 	limit := 100
